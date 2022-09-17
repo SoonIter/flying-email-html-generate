@@ -14,6 +14,7 @@
     "@github/markdown-toolbar-element": "^2.1.1",
     "@vueuse/core": "^9.2.0",
     "markdown-it": "^13.0.1",
+    "sass": "^1.54.9",
     "simplemde": "^1.11.2",
     "vue": "^3.2.38",
     "vue-router": "^4.1.5",
