@@ -1,0 +1,65 @@
+name: release
+on:
+  push:
+    tags:
+      - 'V*'
+      - 'v*'
+
+jobs:
+  publish-npm:
+  	# 在ubuntu最新版本的虚拟机执行
+    runs-on: ubuntu-latest
+
+    steps:
+      # 检查并切换到master分支
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      # 安装node
+      - name: Set node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Setup @antfu/ni
+        run: npm i -g @antfu/ni
+
+      - name: Install and Build
+        run: |
+          nci
+          nr build
+
+			# 创建GitHub Release
+      - name: 创建GitHub Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+        	# 配置github token （这个无需去github配置，默认存在的）
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+        	# 标签名
+          tag_name: v${{GITHUB_REF_NAME}}
+          # release名
+          release_name: v${{GITHUB_REF_NAME}}
+          # 是否为草稿
+          draft: false
+          # 是否为预发布
+          prerelease: false
+
+      - name: tar压缩
+        run: |
+          tar -czvf ./dist.tar.gz ./dist
+
+			# 上传Release Asset
+      - name: 上传Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+        	# 上传URL为创建GitHub Release步骤的输出值，可通过配置的id获取
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          # 上传文件信息
+          asset_path: ./dist.tar.gz
+          asset_name: dist.tar.gz
+          asset_content_type: application/gz
